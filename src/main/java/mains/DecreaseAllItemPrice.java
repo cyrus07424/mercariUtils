@@ -1,6 +1,5 @@
 package mains;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +18,7 @@ import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.LoadState;
 import com.microsoft.playwright.options.MouseButton;
 
+import constants.Configurations;
 import utils.Dtos;
 import utils.JacksonHelper;
 import utils.PlaywrightHelper;
@@ -29,11 +29,6 @@ import utils.PlaywrightHelper;
  * @author cyrus
  */
 public class DecreaseAllItemPrice {
-
-	/**
-	 * 商品の値下げ設定のファイル.
-	 */
-	private static final File ITEM_PRICE_DECREASE_SETTINGS_FILE = new File("data/settings.json");
 
 	/**
 	 * メイン.
@@ -121,6 +116,7 @@ public class DecreaseAllItemPrice {
 
 										// 商品の値下げ設定が存在しない場合はデフォルト値を設定
 										if (settings == null) {
+											// FIXME
 											settings = new Dtos.ItemPriceDecreaseSettings();
 											settings.minimumPrice = 1000;
 											settings.decreaseStep = 100;
@@ -143,9 +139,12 @@ public class DecreaseAllItemPrice {
 												// NOP
 											}
 
-											// 値下げ後の価格を入力
-											int newPrice = currentPrice - settings.decreaseStep;
+											// 値下げ後の価格を計算
+											int newPrice = Math.max(currentPrice - settings.decreaseStep,
+													settings.minimumPrice);
 											System.out.println("newPrice: " + newPrice);
+
+											// 値下げ後の価格を入力
 											itemDetailPage.locator("input[name='price']")
 													.fill(String.valueOf(newPrice));
 
@@ -162,7 +161,7 @@ public class DecreaseAllItemPrice {
 						}
 
 						// 商品の値下げ設定のマップを出力
-						JacksonHelper.getObjectMapper().writeValue(ITEM_PRICE_DECREASE_SETTINGS_FILE,
+						JacksonHelper.getObjectMapper().writeValue(Configurations.ITEM_PRICE_DECREASE_SETTINGS_FILE,
 								JacksonHelper.getObjectMapper().valueToTree(settingsMap));
 					}
 				}
@@ -181,7 +180,7 @@ public class DecreaseAllItemPrice {
 	 */
 	private static Map<String, Dtos.ItemPriceDecreaseSettings> getItemPriceDecreaseSettingsMap() {
 		try {
-			return JacksonHelper.getObjectMapper().readValue(ITEM_PRICE_DECREASE_SETTINGS_FILE,
+			return JacksonHelper.getObjectMapper().readValue(Configurations.ITEM_PRICE_DECREASE_SETTINGS_FILE,
 					new TypeReference<Map<String, Dtos.ItemPriceDecreaseSettings>>() {
 					});
 		} catch (Exception e) {
