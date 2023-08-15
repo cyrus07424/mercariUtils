@@ -7,8 +7,10 @@ import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.options.LoadState;
 
 import constants.Configurations;
+import utils.PlaywrightHelper;
 
 /**
  * メルカリにログイン.
@@ -27,20 +29,18 @@ public class LoginMercari {
 
 		// Playwrightを作成
 		try (Playwright playwright = Playwright.create()) {
-			// ブラウザ起動オプションを設定
-			BrowserType.LaunchOptions launchOptions = new BrowserType.LaunchOptions()
-					.setHeadless(Configurations.USE_HEADLESS_MODE);
+			// ブラウザ起動オプションを取得
+			BrowserType.LaunchOptions launchOptions = PlaywrightHelper.getLaunchOptions();
 
 			// ブラウザを起動
 			try (Browser browser = playwright.chromium().launch(launchOptions)) {
 				System.out.println("■launched");
 
-				// ブラウザコンテキストオプションを設定
-				Browser.NewContextOptions newContextOptions = new Browser.NewContextOptions();
+				// ブラウザコンテキストオプションを取得
+				Browser.NewContextOptions newContextOptions = PlaywrightHelper.getNewContextOptions(false);
 
 				// ブラウザコンテキストを取得
 				try (BrowserContext context = browser.newContext(newContextOptions)) {
-
 					// ページを取得
 					try (Page page = context.newPage()) {
 						// FIXME ページを設定
@@ -50,17 +50,23 @@ public class LoginMercari {
 
 						// トップ画面を表示
 						page.navigate("https://jp.mercari.com/");
-						page.waitForTimeout(1000);
+
+						// 読み込み完了まで待機
+						page.waitForLoadState(LoadState.NETWORKIDLE);
 
 						// ログインボタンをクリック
 						page.locator(
 								"div.merNavigationTopMenuItem:nth-child(2) > div:nth-child(1) > button:nth-child(1)")
 								.click();
-						page.waitForTimeout(1000);
+
+						// 読み込み完了まで待機
+						page.waitForLoadState(LoadState.NETWORKIDLE);
 
 						// メール・電話番号でログインボタンをクリック
-						page.locator(".style_email__T3Zi1 > a:nth-child(1)").click();
-						page.waitForTimeout(1000);
+						page.locator("div.merButton[location-2='email_button']").click();
+
+						// 読み込み完了まで待機
+						page.waitForLoadState(LoadState.NETWORKIDLE);
 
 						// Scanner
 						try (Scanner scanner = new Scanner(System.in)) {
@@ -90,15 +96,12 @@ public class LoginMercari {
 						// ボタンをクリック
 						page.locator("button[type='submit']").click();
 
-						// FIXME 確認のためウエイト
-						page.waitForTimeout(10000);
+						// 読み込み完了まで待機
+						page.waitForLoadState(LoadState.NETWORKIDLE);
 
 						// ステートを出力
 						context.storageState(
 								new BrowserContext.StorageStateOptions().setPath(Configurations.STATE_PATH));
-
-						// FIXME 確認のためウエイト
-						page.waitForTimeout(1000);
 					}
 				}
 			}

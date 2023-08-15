@@ -16,13 +16,7 @@ public interface Configurations {
 	boolean USE_HEADLESS_MODE = false;
 
 	/**
-	 * クッキーCSVファイルの出力先.
-	 */
-	@Deprecated
-	File COOKIE_CSV_FILE = new File("data/cookie.csv");
-
-	/**
-	 * クッキーCSVファイルの出力先.
+	 * ブラウザのステートの出力先.
 	 */
 	Path STATE_PATH = new File("data/state.json").toPath();
 }
