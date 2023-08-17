@@ -158,11 +158,14 @@ public class DecreaseAllItemPrice {
 									}
 								}
 							}
-						}
+						} finally {
+							// コンテキストのステートを出力
+							PlaywrightHelper.storageState(context);
 
-						// 商品の値下げ設定のマップを出力
-						JacksonHelper.getObjectMapper().writeValue(Configurations.ITEM_PRICE_DECREASE_SETTINGS_FILE,
-								JacksonHelper.getObjectMapper().valueToTree(settingsMap));
+							// 商品の値下げ設定のマップを出力
+							JacksonHelper.getObjectMapper().writeValue(Configurations.ITEM_PRICE_DECREASE_SETTINGS_FILE,
+									JacksonHelper.getObjectMapper().valueToTree(settingsMap));
+						}
 					}
 				}
 			}

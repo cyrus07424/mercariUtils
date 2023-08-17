@@ -62,6 +62,9 @@ public class OpenMercariWithState {
 
 						// FIXME 確認のためウエイト
 						page.waitForTimeout(10000);
+					} finally {
+						// コンテキストのステートを出力
+						PlaywrightHelper.storageState(context);
 					}
 				}
 			}

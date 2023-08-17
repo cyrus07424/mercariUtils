@@ -1,6 +1,7 @@
 package utils;
 
 import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
 
 import constants.Configurations;
@@ -36,5 +37,14 @@ public class PlaywrightHelper {
 			newContextOptions.setStorageStatePath(Configurations.STATE_PATH);
 		}
 		return newContextOptions;
+	}
+
+	/**
+	 * コンテキストのステートを出力.
+	 * @param context
+	 */
+	public static void storageState(BrowserContext context) {
+		context.storageState(
+				new BrowserContext.StorageStateOptions().setPath(Configurations.STATE_PATH));
 	}
 }

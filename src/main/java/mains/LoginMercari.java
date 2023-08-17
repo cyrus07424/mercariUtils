@@ -9,7 +9,6 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.LoadState;
 
-import constants.Configurations;
 import utils.PlaywrightHelper;
 
 /**
@@ -98,10 +97,9 @@ public class LoginMercari {
 
 						// 読み込み完了まで待機
 						page.waitForLoadState(LoadState.NETWORKIDLE);
-
-						// ステートを出力
-						context.storageState(
-								new BrowserContext.StorageStateOptions().setPath(Configurations.STATE_PATH));
+					} finally {
+						// コンテキストのステートを出力
+						PlaywrightHelper.storageState(context);
 					}
 				}
 			}
