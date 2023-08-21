@@ -70,104 +70,110 @@ public class DecreaseAllItemPrice {
 
 							// 全ての出品した商品に対して実行
 							for (Locator itemLocator : page.locator("#currentListing .merListItem").all()) {
-								// containerを取得
-								Locator containerLocator = itemLocator.locator(".container");
-								System.out.println(containerLocator.textContent());
+								try {
+									// containerを取得
+									Locator containerLocator = itemLocator.locator(".container");
+									System.out.println(containerLocator.textContent());
 
-								// 公開停止中であるかを判定
-								if (StringUtils.contains(containerLocator.textContent(), "公開停止中")) {
-									System.out.println("公開停止中です: " + itemLocator.locator("a").getAttribute("href"));
-								} else {
-									// 商品をクリック
-									itemLocator.locator("a")
-											.click(new ClickOptions().setButton(MouseButton.MIDDLE));
+									// 公開停止中であるかを判定
+									if (StringUtils.contains(containerLocator.textContent(), "公開停止中")) {
+										System.out.println("公開停止中です: " + itemLocator.locator("a").getAttribute("href"));
+									} else {
+										// 商品をクリック
+										itemLocator.locator("a")
+												.click(new ClickOptions().setButton(MouseButton.MIDDLE));
 
-									// 商品詳細画面を取得
-									try (Page itemDetailPage = context.waitForPage(() -> {
-										// NOP
-									})) {
-										// ページ(タブ)をアクティブに変更
-										itemDetailPage.bringToFront();
-
-										// 読み込み完了まで待機
-										itemDetailPage.waitForLoadState(LoadState.NETWORKIDLE);
-
-										// URLを取得
-										String itemDetailPageUrl = itemDetailPage.url();
-										System.out.println("itemDetailPageUrl: " + itemDetailPageUrl);
-
-										// 商品IDを取得
-										String itemId = FilenameUtils.getName(itemDetailPageUrl);
-										System.out.println("itemId: " + itemId);
-
-										// 商品名を取得
-										String itemName = itemDetailPage.locator("h1.heading__a7d91561").textContent();
-										System.out.println("itemName: " + itemName);
-
-										// 現在の価格を取得
-										Locator priceLocator = itemDetailPage
-												.locator(".sc-bada7e3a-0 > span:nth-child(2)");
-										int currentPrice = Integer
-												.parseInt(priceLocator.textContent().replaceAll(",", ""));
-										System.out.println("currentPrice: " + currentPrice);
-
-										// 商品の値下げ設定を取得
-										Dtos.ItemPriceDecreaseSettings settings = settingsMap.get(itemId);
-
-										// 商品の値下げ設定が存在しない場合はデフォルト値を設定
-										if (settings == null) {
-											// FIXME
-											settings = new Dtos.ItemPriceDecreaseSettings();
-											settings.minimumPrice = 1000;
-											settings.decreaseStep = 100;
-											settingsMap.put(itemId, settings);
-										}
-										settings.itemName = itemName;
-
-										// 現在の価格が最低価格より大きい場合
-										if (settings.minimumPrice < currentPrice) {
-											// 商品の編集ボタンをクリック
-											itemDetailPage.getByText("商品の編集").click();
+										// 商品詳細画面を取得
+										try (Page itemDetailPage = context.waitForPage(() -> {
+											// NOP
+										})) {
+											// ページ(タブ)をアクティブに変更
+											itemDetailPage.bringToFront();
 
 											// 読み込み完了まで待機
 											itemDetailPage.waitForLoadState(LoadState.NETWORKIDLE);
 
-											try {
-												// FIXME モーダルが表示されている場合はクリック
-												itemDetailPage.locator("mer-modal button").click();
-											} catch (Exception e) {
-												// NOP
+											// URLを取得
+											String itemDetailPageUrl = itemDetailPage.url();
+											System.out.println("itemDetailPageUrl: " + itemDetailPageUrl);
+
+											// 商品IDを取得
+											String itemId = FilenameUtils.getName(itemDetailPageUrl);
+											System.out.println("itemId: " + itemId);
+
+											// 商品名を取得
+											String itemName = itemDetailPage.locator("h1.heading__a7d91561")
+													.textContent();
+											System.out.println("itemName: " + itemName);
+
+											// 現在の価格を取得
+											Locator priceLocator = itemDetailPage
+													.locator(".sc-bada7e3a-0 > span:nth-child(2)");
+											int currentPrice = Integer
+													.parseInt(priceLocator.textContent().replaceAll(",", ""));
+											System.out.println("currentPrice: " + currentPrice);
+
+											// 商品の値下げ設定を取得
+											Dtos.ItemPriceDecreaseSettings settings = settingsMap.get(itemId);
+
+											// 商品の値下げ設定が存在しない場合はデフォルト値を設定
+											if (settings == null) {
+												// FIXME
+												settings = new Dtos.ItemPriceDecreaseSettings();
+												settings.minimumPrice = 1000;
+												settings.decreaseStep = 100;
+												settingsMap.put(itemId, settings);
 											}
+											settings.itemName = itemName;
 
-											// 値下げ後の価格を計算
-											int newPrice = Math.max(currentPrice - settings.decreaseStep,
-													settings.minimumPrice);
-											System.out.println("newPrice: " + newPrice);
+											// 現在の価格が最低価格より大きい場合
+											if (settings.minimumPrice < currentPrice) {
+												// 商品の編集ボタンをクリック
+												itemDetailPage.getByText("商品の編集").click();
 
-											// 値下げ後の価格を入力
-											itemDetailPage.locator("input[name='price']")
-													.fill(String.valueOf(newPrice));
+												// 読み込み完了まで待機
+												itemDetailPage.waitForLoadState(LoadState.NETWORKIDLE);
 
-											// 変更するボタンをクリック
-											itemDetailPage.locator("button[type='submit'][data-testid='edit-button']")
-													.click();
+												try {
+													// FIXME モーダルが表示されている場合はクリック
+													itemDetailPage.locator("mer-modal button").click();
+												} catch (Exception e) {
+													// NOP
+												}
 
-											// 読み込み完了まで待機
-											itemDetailPage.waitForLoadState(LoadState.NETWORKIDLE);
+												// 値下げ後の価格を計算
+												int newPrice = Math.max(currentPrice - settings.decreaseStep,
+														settings.minimumPrice);
+												System.out.println("newPrice: " + newPrice);
+
+												// 値下げ後の価格を入力
+												itemDetailPage.locator("input[name='price']")
+														.fill(String.valueOf(newPrice));
+
+												// 変更するボタンをクリック
+												itemDetailPage
+														.locator("button[type='submit'][data-testid='edit-button']")
+														.click();
+
+												// 読み込み完了まで待機
+												itemDetailPage.waitForLoadState(LoadState.NETWORKIDLE);
+											}
 										}
 									}
+								} catch (Exception e) {
+									e.printStackTrace();
 								}
 							}
 						} finally {
 							// コンテキストのステートを出力
 							PlaywrightHelper.storageState(context);
-
-							// 商品の値下げ設定のマップを出力
-							JacksonHelper.getObjectMapper().writeValue(Configurations.ITEM_PRICE_DECREASE_SETTINGS_FILE,
-									JacksonHelper.getObjectMapper().valueToTree(settingsMap));
 						}
 					}
 				}
+			} finally {
+				// 商品の値下げ設定のマップを出力
+				JacksonHelper.getObjectMapper().writeValue(Configurations.ITEM_PRICE_DECREASE_SETTINGS_FILE,
+						JacksonHelper.getObjectMapper().valueToTree(settingsMap));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
