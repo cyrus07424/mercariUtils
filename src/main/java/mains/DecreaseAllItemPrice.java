@@ -1,6 +1,5 @@
 package mains;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -174,13 +173,20 @@ public class DecreaseAllItemPrice {
 													// 読み込み完了まで待機
 													itemDetailPage.waitForLoadState(LoadState.NETWORKIDLE);
 
+													// 現在の価格を更新
+													settings.currentPrice = newPrice;
+
 													// 最終値下げ実行日時を設定
 													settings.lastDecreaseDate = new Date();
 												}
 											}
+										} catch (Exception e) {
+											System.err.println("catch itemDetailPage");
+											e.printStackTrace();
 										}
 									}
 								} catch (Exception e) {
+									System.err.println("catch itemLocator");
 									e.printStackTrace();
 								}
 							}
@@ -188,14 +194,24 @@ public class DecreaseAllItemPrice {
 							// コンテキストのステートを出力
 							PlaywrightHelper.storageState(context);
 						}
+					} catch (Exception e) {
+						System.err.println("catch context");
+						e.printStackTrace();
 					}
+				} catch (Exception e) {
+					System.err.println("catch browser");
+					e.printStackTrace();
 				}
+			} catch (Exception e) {
+				System.err.println("catch playwright");
+				e.printStackTrace();
 			} finally {
 				// 商品の値下げ設定のマップを出力
 				JacksonHelper.getObjectMapper().writeValue(Configurations.ITEM_PRICE_DECREASE_SETTINGS_FILE,
 						JacksonHelper.getObjectMapper().valueToTree(settingsMap));
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
+			System.err.println("catch main");
 			e.printStackTrace();
 		} finally {
 			System.out.println("■done.");
