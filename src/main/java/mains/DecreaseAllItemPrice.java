@@ -1,11 +1,13 @@
 package mains;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.microsoft.playwright.Browser;
@@ -101,9 +103,31 @@ public class DecreaseAllItemPrice {
 											String itemId = FilenameUtils.getName(itemDetailPageUrl);
 											System.out.println("itemId: " + itemId);
 
+											// 商品の値下げ設定を取得
+											Dtos.ItemPriceDecreaseSettings settings = settingsMap.get(itemId);
+
+											// 商品の値下げ設定が存在しない場合はデフォルト値を設定
+											if (settings == null) {
+												settings = new Dtos.ItemPriceDecreaseSettings();
+												settingsMap.put(itemId, settings);
+											}
+											if (settings.minimumPrice == null) {
+												// FIXME
+												settings.minimumPrice = 1000;
+											}
+											if (settings.decreaseStep == null) {
+												// FIXME
+												settings.decreaseStep = 100;
+											}
+											if (settings.crawlIntervalHour == null) {
+												// FIXME
+												settings.crawlIntervalHour = 24;
+											}
+
 											// 商品名を取得
 											String itemName = itemDetailPage.locator("h1.heading__a7d91561")
 													.textContent();
+											settings.itemName = itemName;
 											System.out.println("itemName: " + itemName);
 
 											// 現在の価格を取得
@@ -111,52 +135,48 @@ public class DecreaseAllItemPrice {
 													.locator(".sc-bada7e3a-0 > span:nth-child(2)");
 											int currentPrice = Integer
 													.parseInt(priceLocator.textContent().replaceAll(",", ""));
+											settings.currentPrice = currentPrice;
 											System.out.println("currentPrice: " + currentPrice);
-
-											// 商品の値下げ設定を取得
-											Dtos.ItemPriceDecreaseSettings settings = settingsMap.get(itemId);
-
-											// 商品の値下げ設定が存在しない場合はデフォルト値を設定
-											if (settings == null) {
-												// FIXME
-												settings = new Dtos.ItemPriceDecreaseSettings();
-												settings.minimumPrice = 1000;
-												settings.decreaseStep = 100;
-												settingsMap.put(itemId, settings);
-											}
-											settings.itemName = itemName;
 
 											// 現在の価格が最低価格より大きい場合
 											if (settings.minimumPrice < currentPrice) {
-												// 商品の編集ボタンをクリック
-												itemDetailPage.getByText("商品の編集").click();
+												// 最終値下げ実行日時が未設定または最終値下げ実行日時から値下げ間隔(時間)以上経過している場合
+												if (settings.lastDecreaseDate == null || DateUtils
+														.addHours(settings.lastDecreaseDate, settings.crawlIntervalHour)
+														.getTime() <= System.currentTimeMillis()) {
+													// 商品の編集ボタンをクリック
+													itemDetailPage.getByText("商品の編集").click();
 
-												// 読み込み完了まで待機
-												itemDetailPage.waitForLoadState(LoadState.NETWORKIDLE);
+													// 読み込み完了まで待機
+													itemDetailPage.waitForLoadState(LoadState.NETWORKIDLE);
 
-												try {
-													// FIXME モーダルが表示されている場合はクリック
-													itemDetailPage.locator("mer-modal button").click();
-												} catch (Exception e) {
-													// NOP
+													try {
+														// FIXME モーダルが表示されている場合はクリック
+														itemDetailPage.locator("mer-modal button").click();
+													} catch (Exception e) {
+														// NOP
+													}
+
+													// 値下げ後の価格を計算
+													int newPrice = Math.max(currentPrice - settings.decreaseStep,
+															settings.minimumPrice);
+													System.out.println("newPrice: " + newPrice);
+
+													// 値下げ後の価格を入力
+													itemDetailPage.locator("input[name='price']")
+															.fill(String.valueOf(newPrice));
+
+													// 変更するボタンをクリック
+													itemDetailPage
+															.locator("button[type='submit'][data-testid='edit-button']")
+															.click();
+
+													// 読み込み完了まで待機
+													itemDetailPage.waitForLoadState(LoadState.NETWORKIDLE);
+
+													// 最終値下げ実行日時を設定
+													settings.lastDecreaseDate = new Date();
 												}
-
-												// 値下げ後の価格を計算
-												int newPrice = Math.max(currentPrice - settings.decreaseStep,
-														settings.minimumPrice);
-												System.out.println("newPrice: " + newPrice);
-
-												// 値下げ後の価格を入力
-												itemDetailPage.locator("input[name='price']")
-														.fill(String.valueOf(newPrice));
-
-												// 変更するボタンをクリック
-												itemDetailPage
-														.locator("button[type='submit'][data-testid='edit-button']")
-														.click();
-
-												// 読み込み完了まで待機
-												itemDetailPage.waitForLoadState(LoadState.NETWORKIDLE);
 											}
 										}
 									}

@@ -1,5 +1,7 @@
 package utils;
 
+import java.util.Date;
+
 /**
  * DTO用クラス.
  *
@@ -21,13 +23,28 @@ public class Dtos {
 		public String itemName;
 
 		/**
+		 * 現在の価格(円).
+		 */
+		public Integer currentPrice;
+
+		/**
 		 * 最低価格(円).
 		 */
-		public int minimumPrice;
+		public Integer minimumPrice;
 
 		/**
 		 * 値下げ幅(円).
 		 */
-		public int decreaseStep;
+		public Integer decreaseStep;
+
+		/**
+		 * 値下げ間隔(時間).
+		 */
+		public Integer crawlIntervalHour;
+
+		/**
+		 * 最終値下げ実行日時.
+		 */
+		public Date lastDecreaseDate;
 	}
 }
