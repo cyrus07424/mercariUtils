@@ -151,7 +151,7 @@ public class DecreaseAllItemPrice {
 
 													try {
 														// FIXME モーダルが表示されている場合はクリック
-														itemDetailPage.locator("mer-modal button").click();
+														itemDetailPage.locator("#modal button").click();
 													} catch (Exception e) {
 														// NOP
 													}
