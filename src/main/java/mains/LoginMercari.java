@@ -55,14 +55,8 @@ public class LoginMercari {
 
 						// ログインボタンをクリック
 						page.locator(
-								"div.merNavigationTopMenuItem:nth-child(2) > div:nth-child(1) > button:nth-child(1)")
+								"#__next > div > header > div > div > div.navigationSection__6d8930f1.endSection__6d8930f1 > nav > div > div.desktopContainer__c74efeb1 > div:nth-child(1) > div > button")
 								.click();
-
-						// 読み込み完了まで待機
-						page.waitForLoadState(LoadState.NETWORKIDLE);
-
-						// メール・電話番号でログインボタンをクリック
-						page.locator("div.merButton[location-2='email_button']").click();
 
 						// 読み込み完了まで待機
 						page.waitForLoadState(LoadState.NETWORKIDLE);
