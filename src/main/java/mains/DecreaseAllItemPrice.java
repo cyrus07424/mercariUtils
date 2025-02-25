@@ -131,7 +131,7 @@ public class DecreaseAllItemPrice {
 
 											// 現在の価格を取得
 											Locator priceLocator = itemDetailPage
-													.locator(".sc-bada7e3a-0 > span:nth-child(2)");
+													.locator("[data-testid='price'] > span:nth-child(2)");
 											int currentPrice = Integer
 													.parseInt(priceLocator.textContent().replaceAll(",", ""));
 											settings.currentPrice = currentPrice;
